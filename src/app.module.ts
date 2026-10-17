@@ -5,6 +5,7 @@ import { AppService } from './app.service.js';
 import { FarmsModule } from './farms/farms.module.js';
 import { PaddocksModule } from './paddocks/paddocks.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
+import { ResourcesModule } from './resources/resources.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -20,6 +21,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     PrismaModule,
     FarmsModule,
     PaddocksModule,
+    ResourcesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

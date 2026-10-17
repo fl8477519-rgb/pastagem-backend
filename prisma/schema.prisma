@@ -7,21 +7,161 @@ datasource db {
   url      = "file:./dev.db"
 }
 
+model User {
+  id           Int    @id @default(autoincrement())
+  name         String
+  phone        String
+  profile      String
+  alertChannel String
+  farms        Farm[]
+}
+
 model Farm {
-  id          String    @id @default(uuid())
-  name        String
-  ownerName   String
-  paddocks    Paddock[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id             String    @id @default(uuid())
+  name           String
+  ownerName      String
+  municipalityUf String    @default("")
+  totalAreaHa    Float     @default(0)
+  users          User[]
+  paddocks       Paddock[]
+  lots           Lot[]
+  inputs         Input[]
+  alerts         Alert[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }
 
 model Paddock {
-  id           String   @id @default(uuid())
-  name         String
-  areaHectares Float
-  farmId       String
-  farm         Farm     @relation(fields: [farmId], references: [id], onDelete: Cascade)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                   String                @id @default(uuid())
+  name                 String
+  areaHectares         Float
+  status               String                @default("livre")
+  coordinates          String                @default("")
+  farmId               String
+  farm                 Farm                  @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  cultivarId           Int?
+  cultivar             Cultivar?             @relation(fields: [cultivarId], references: [id], onDelete: SetNull)
+  occupations          Occupation[]
+  measurements         PastureMeasurement[]
+  stockingCalculations StockingCalculation[]
+  applications         InputApplication[]
+  alerts               Alert[]
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+}
+
+model Lot {
+  id          Int          @id @default(autoincrement())
+  name        String
+  category    String
+  headCount   Int
+  farmId      String
+  farm        Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  animals     Animal[]
+  occupations Occupation[]
+}
+
+model Cultivar {
+  id            Int       @id @default(autoincrement())
+  name          String
+  type          String
+  entryHeightCm Float
+  exitHeightCm  Float
+  restDays      Int
+  paddocks      Paddock[]
+}
+
+model Animal {
+  id                 Int                 @id @default(autoincrement())
+  tag                String              @unique
+  sex                String
+  breed              String
+  birthDate          DateTime
+  lotId              Int
+  lot                Lot                 @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  weighings          Weighing[]
+  zootechnicalEvents ZootechnicalEvent[]
+}
+
+model Weighing {
+  id       Int      @id @default(autoincrement())
+  date     DateTime
+  weightKg Float
+  animalId Int
+  animal   Animal   @relation(fields: [animalId], references: [id], onDelete: Cascade)
+}
+
+model ZootechnicalEvent {
+  id          Int      @id @default(autoincrement())
+  type        String
+  date        DateTime
+  description String
+  animalId    Int
+  animal      Animal   @relation(fields: [animalId], references: [id], onDelete: Cascade)
+}
+
+model Occupation {
+  id            Int       @id @default(autoincrement())
+  entry         DateTime
+  exit          DateTime?
+  entryHeightCm Float
+  exitHeightCm  Float?
+  paddockId     String
+  paddock       Paddock   @relation(fields: [paddockId], references: [id], onDelete: Cascade)
+  lotId         Int
+  lot           Lot       @relation(fields: [lotId], references: [id], onDelete: Cascade)
+}
+
+model PastureMeasurement {
+  id              Int      @id @default(autoincrement())
+  date            DateTime
+  averageHeightCm Float
+  biomassKgDmHa   Float
+  origin          String
+  paddockId       String
+  paddock         Paddock  @relation(fields: [paddockId], references: [id], onDelete: Cascade)
+}
+
+model StockingCalculation {
+  id               Int      @id @default(autoincrement())
+  date             DateTime
+  capacityUaHa     Float
+  suggestedAnimals Int
+  confirmed        Boolean  @default(false)
+  paddockId        String
+  paddock          Paddock  @relation(fields: [paddockId], references: [id], onDelete: Cascade)
+}
+
+model Input {
+  id              Int                @id @default(autoincrement())
+  name            String
+  type            String
+  withholdingDays Int
+  farmId          String
+  farm            Farm               @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  applications    InputApplication[]
+}
+
+model InputApplication {
+  id             Int      @id @default(autoincrement())
+  date           DateTime
+  quantity       Float
+  withholdingEnd DateTime
+  inputId        Int
+  input          Input    @relation(fields: [inputId], references: [id], onDelete: Cascade)
+  paddockId      String
+  paddock        Paddock  @relation(fields: [paddockId], references: [id], onDelete: Cascade)
+}
+
+model Alert {
+  id          Int      @id @default(autoincrement())
+  type        String
+  severity    String
+  message     String
+  generatedAt DateTime @default(now())
+  status      String   @default("aberto")
+  paddockId   String?
+  paddock     Paddock? @relation(fields: [paddockId], references: [id], onDelete: SetNull)
+  farmId      String?
+  farm        Farm?    @relation(fields: [farmId], references: [id], onDelete: SetNull)
 }

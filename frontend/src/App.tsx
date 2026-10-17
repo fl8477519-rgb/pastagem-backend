@@ -17,9 +17,11 @@ import {
   X,
 } from 'lucide-react';
 import { api } from './api';
+import { RecordsPage } from './RecordsPage';
 import type { Farm, Paddock } from './types';
 
 function App() {
+  const [activeView, setActiveView] = useState<'overview' | 'records'>('overview');
   const [farms, setFarms] = useState<Farm[]>([]);
   const [selectedFarmId, setSelectedFarmId] = useState('');
   const [paddocks, setPaddocks] = useState<Paddock[]>([]);
@@ -172,6 +174,12 @@ function App() {
       </header>
 
       <main id="inicio" className="page-content">
+        <nav className="app-navigation" aria-label="Navegação principal">
+          <button className={activeView === 'overview' ? 'is-active' : ''} type="button" onClick={() => setActiveView('overview')}>Visão geral</button>
+          <button className={activeView === 'records' ? 'is-active' : ''} type="button" onClick={() => setActiveView('records')}>Funcionalidades</button>
+        </nav>
+        {activeView === 'overview' ? (
+          <>
         <section className="page-heading">
           <div>
             <p className="eyebrow"><Leaf size={14} /> OPERAÇÃO DE CAMPO</p>
@@ -350,6 +358,10 @@ function App() {
         </section>
 
         <footer className="page-footer"><span>PASTAGEM <span>·</span> GESTÃO DE CAMPO</span><span>Feito para crescer junto com a terra <Leaf size={13} /></span></footer>
+          </>
+        ) : (
+          <RecordsPage />
+        )}
       </main>
     </div>
   );

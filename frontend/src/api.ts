@@ -1,6 +1,13 @@
-import type { CreateFarmInput, CreatePaddockInput, Farm, Paddock } from './types';
+import type {
+  CreateFarmInput,
+  CreatePaddockInput,
+  Farm,
+  Paddock,
+} from './types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? '/api';
+
+export type ResourceRecord = Record<string, unknown> & { id?: number | string };
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -13,7 +20,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (!response.ok) {
     const detail = await response.text();
-    throw new Error(detail || `Erro ${response.status} ao comunicar com a API.`);
+    throw new Error(
+      detail || `Erro ${response.status} ao comunicar com a API.`,
+    );
   }
 
   return response.json() as Promise<T>;
@@ -33,4 +42,30 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(paddock),
     }),
+  getRecords: (resource: string) =>
+    request<ResourceRecord[]>(`/records/${resource}`),
+  createRecord: (resource: string, record: Record<string, unknown>) =>
+    request<ResourceRecord>(`/records/${resource}`, {
+      method: 'POST',
+      body: JSON.stringify(record),
+    }),
+  updateRecord: (
+    resource: string,
+    id: number | string,
+    record: Record<string, unknown>,
+  ) =>
+    request<ResourceRecord>(
+      `/records/${resource}/${encodeURIComponent(String(id))}`,
+      {
+        method: 'PUT',
+        body: JSON.stringify(record),
+      },
+    ),
+  deleteRecord: (resource: string, id: number | string) =>
+    request<ResourceRecord>(
+      `/records/${resource}/${encodeURIComponent(String(id))}`,
+      {
+        method: 'DELETE',
+      },
+    ),
 };
