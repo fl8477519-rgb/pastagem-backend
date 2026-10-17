@@ -87,7 +87,8 @@ function App() {
 
   async function handleCreateFarm(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const name = String(formData.get('name') ?? '').trim();
     const ownerName = String(formData.get('ownerName') ?? '').trim();
     if (!name || !ownerName) return;
@@ -97,11 +98,11 @@ function App() {
     setNotice('');
     try {
       const farm = await api.createFarm({ name, ownerName });
+      form.reset();
       setFarms((current) => [farm, ...current]);
       setSelectedFarmId(farm.id);
       setShowFarmForm(false);
       setNotice('Fazenda cadastrada com sucesso.');
-      event.currentTarget.reset();
     } catch (requestError) {
       setError(getErrorMessage(requestError));
     } finally {
@@ -113,7 +114,8 @@ function App() {
     event.preventDefault();
     if (!selectedFarm) return;
 
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const name = String(formData.get('name') ?? '').trim();
     const areaHectares = Number(formData.get('areaHectares'));
     if (!name || !Number.isFinite(areaHectares) || areaHectares <= 0) return;
@@ -127,10 +129,10 @@ function App() {
         name,
         areaHectares,
       });
+      form.reset();
       setPaddocks((current) => [paddock, ...current]);
       setShowPaddockForm(false);
       setNotice('Talhão cadastrado com sucesso.');
-      event.currentTarget.reset();
     } catch (requestError) {
       setError(getErrorMessage(requestError));
     } finally {
