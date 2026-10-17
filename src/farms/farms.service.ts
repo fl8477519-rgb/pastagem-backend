@@ -1,34 +1,28 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { randomUUID } from 'crypto';
-
-export interface Farm {
-  id: string;
-  name: string;
-  ownerName?: string;
-  updatedAt: Date;
-}
+import { PrismaService } from '../prisma/prisma.service.js';
+import { Farm } from '@prisma/client';
 
 @Injectable()
 export class FarmsService {
-  private farms: Farm[] = [];
+  constructor(private readonly prisma: PrismaService) {}
 
-  create(createFarmDto: { name: string; ownerName?: string }): Farm {
-    const newFarm: Farm = {
-      id: randomUUID(),
-      name: createFarmDto.name,
-      ownerName: createFarmDto.ownerName,
-      updatedAt: new Date(),
-    };
-    this.farms.push(newFarm);
-    return newFarm;
+  async create(createFarmDto: { name: string; ownerName?: string }): Promise<Farm> {
+    return this.prisma.farm.create({
+      data: {
+        name: createFarmDto.name,
+        ownerName: createFarmDto.ownerName,
+      },
+    });
   }
 
-  findAll(): Farm[] {
-    return this.farms;
+  async findAll(): Promise<Farm[]> {
+    return this.prisma.farm.findMany();
   }
 
-  findOne(id: string): Farm {
-    const farm = this.farms.find((f) => f.id === id);
+  async findOne(id: string): Promise<Farm> {
+    const farm = await this.prisma.farm.findUnique({
+      where: { id },
+    });
     if (!farm) {
       throw new NotFoundException(`Fazenda com ID ${id} não encontrada.`);
     }
